@@ -1,4 +1,5 @@
 from typing import *
+from subprocess import Popen
 from fastapi import FastAPI
 from fastapi.openapi.docs import (
     get_redoc_html,
@@ -38,14 +39,19 @@ async def redoc_html():
         redoc_js_url="/static/js/redoc.standalone.js",
     )
 
-@app.get("/video01", response_class=HTMLResponse)
-async def video01(request: Request):
-    return templates.TemplateResponse("video01.html", {"request": request})
+@app.get("/video", response_class=HTMLResponse)
+async def video(request: Request):
+    return templates.TemplateResponse("video.html", {"request": request})
 
-@app.get("/video02", response_class=HTMLResponse)
-async def video01(request: Request):
-    return templates.TemplateResponse("video02.html", {"request": request})
+@app.get("/test", response_class=HTMLResponse)
+async def test(request: Request):
+    return templates.TemplateResponse("test.html", {"request": request})
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=9000)
+    Popen(['python3', '-m', 'https_redirect'])
+    uvicorn.run(
+        "main:app", host="0.0.0.0", port=443,
+        ssl_keyfile='certs/key.pem',
+        ssl_certfile='certs/cert.pem'
+    )
