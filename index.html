@@ -40,18 +40,34 @@ function openCvReady() {
         src.copyTo(dst);
         cv.cvtColor(dst, gray, cv.COLOR_RGBA2GRAY, 0);
         try{
-            classifier.detectMultiScale(gray, faces, 1.1, 3, 0);
+            classifier.detectMultiScale(gray, faces, 1.1, 2, 0);
             console.log(faces.size());
         }catch(err){
             console.log(err);
         }
-        for (let i = 0; i < faces.size(); ++i) {
-            let face = faces.get(i);
-            let point1 = new cv.Point(face.x, face.y);
-            let point2 = new cv.Point(face.x + face.width, face.y + face.height);
-            cv.rectangle(dst, point1, point2, [255, 0, 0, 255]);
+        // for (let i = 0; i < faces.size(); ++i) {
+        //     let face = faces.get(i);
+        //     let point1 = new cv.Point(face.x, face.y);
+        //     let point2 = new cv.Point(face.x + face.width, face.y + face.height);
+        //     cv.rectangle(dst, point1, point2, [255, 0, 0, 255]);
+        // }
+        let face = faces.get(0);
+        if (face != undefined) {
+            let rect = new cv.Rect(face.x, face.y, face.width, face.height);
+            crop = dst.roi(rect);
+            cv.imshow("canvas_output", crop);
+            const base64Canvas = canvas_output.toDataURL("image/jpeg").split(';base64,')[1];
+            // console.log(base64Canvas);
+            fetch('https://127.0.0.1:5000/api/user/pattern', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ "image": base64Canvas})
+            })
+            .then(response => response.json())
+            .then(response => console.log(JSON.stringify(response)))
         }
-        cv.imshow("canvas_output", dst);
         // schedule next one.
         let delay = 1000/FPS - (Date.now() - begin);
         setTimeout(processVideo, delay);
