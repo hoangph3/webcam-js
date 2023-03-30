@@ -3,7 +3,7 @@
 import ssl
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-CERTFILE = './certs/localhost.pem'
+CERTFILE = './certs/kotora.pem'
 
 
 def main():

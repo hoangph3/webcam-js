@@ -12,7 +12,7 @@ DOMAIN=$1
 # Create root CA & Private key
 
 openssl req -x509 \
-            -sha256 -days 356 \
+            -sha256 -days 3560 \
             -nodes \
             -newkey rsa:2048 \
             -subj "/CN=${DOMAIN}/C=US/L=San Fransisco" \
@@ -48,6 +48,7 @@ DNS.1 = ${DOMAIN}
 DNS.2 = www.${DOMAIN}
 IP.1 = 192.168.0.1
 IP.2 = 192.168.0.2
+IP.3 = 192.168.0.7
 
 EOF
 

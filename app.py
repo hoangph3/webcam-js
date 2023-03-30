@@ -19,4 +19,7 @@ def hello_world():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, ssl_context=('certs/cert.pem', 'certs/key.pem'))
+    app.run(
+        host='192.168.0.2', port=5000,
+        debug=True, ssl_context=('certs/kotora.crt', 'certs/kotora.key')
+    )

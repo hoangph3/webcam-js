@@ -58,7 +58,7 @@ function openCvReady() {
             cv.imshow("canvas_output", crop);
             const base64Canvas = canvas_output.toDataURL("image/jpeg").split(';base64,')[1];
             // console.log(base64Canvas);
-            fetch('https://127.0.0.1:5000/api/user/pattern', {
+            fetch('https://192.168.0.2:5000/api/user/pattern', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

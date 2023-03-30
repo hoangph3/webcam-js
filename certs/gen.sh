@@ -1,1 +1,0 @@
-openssl req -new -x509 -keyout localhost.pem -out localhost.pem -days 3650 -nodes
