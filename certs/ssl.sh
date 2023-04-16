@@ -49,6 +49,8 @@ DNS.2 = www.${DOMAIN}
 IP.1 = 192.168.0.1
 IP.2 = 192.168.0.2
 IP.3 = 192.168.0.7
+IP.4 = 192.168.0.11
+IP.4 = 192.168.0.12
 
 EOF
 
@@ -76,5 +78,10 @@ openssl x509 -req \
     -in ${DOMAIN}.csr \
     -CA rootCA.crt -CAkey rootCA.key \
     -CAcreateserial -out ${DOMAIN}.crt \
-    -days 365 \
+    -days 3650 \
     -sha256 -extfile cert.conf
+
+
+# Combine .key and .crt to .pem
+
+cat ${DOMAIN}.key ${DOMAIN}.crt > ${DOMAIN}.pem
