@@ -86,7 +86,7 @@ function openCvReady() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     images: [base64Canvas],
-                    box: [face.x, face.y, face.width, face.height]
+                    boxs: [[face.x, face.y, face.x + face.width, face.y + face.height]]
                 }),
             })
             .then((res) => {
