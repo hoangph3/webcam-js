@@ -80,12 +80,12 @@ function openCvReady() {
             // crop = dst.roi(rect);
             cv.imshow("canvas_output", dst);
             const base64Canvas = canvas_output.toDataURL("image/jpeg").split(';base64,')[1];
-            // console.log(base64Canvas);
-            fetch("https://192.168.0.2:5000/api/user/pattern", {
-                method: "POST",
+            console.log(base64Canvas);
+            fetch("https://192.168.0.11:8501/api/user/pattern", {
+                method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    image: base64Canvas,
+                    images: [base64Canvas],
                     box: [face.x, face.y, face.width, face.height]
                 }),
             })
@@ -95,10 +95,10 @@ function openCvReady() {
             .then((data) => {
                 console.log(data);
                 const user_info = document.getElementById("user_info");
-                user_info["username"].value = data.zcfg_requester_comboname;
-                user_info["phone"].value = data.zcfg_requester_phone_number;
-                user_info["email"].value = data.zcfg_requester_address_email;
-                user_info["passport"].value = data.zcfg_requester_id_passport;
+                user_info["username"].value = data.zcfg_requester_comboname ? data.zcfg_requester_comboname : "";
+                user_info["phone"].value = data.zcfg_requester_phone_number ? data.zcfg_requester_phone_number : "";
+                user_info["email"].value = data.zcfg_requester_address_email ? data.zcfg_requester_address_email: "";
+                user_info["passport"].value = data.zcfg_requester_id_passport ? data.zcfg_requester_id_passport : "";
             });
         }
         else {

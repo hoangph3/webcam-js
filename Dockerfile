@@ -1,4 +1,4 @@
-FROM hoangph3/facekyc-webcam-js:x86_64-1.0.0
+FROM python:3.7-slim
 
 WORKDIR /app
 
