@@ -13,6 +13,10 @@ class MyHttpRequestHandler(SimpleHTTPRequestHandler):
             self.path = 'camera.html'
         return SimpleHTTPRequestHandler.do_GET(self)
 
+    def handle_one_request(self):
+        print("IP client:", self.client_address[0])
+        return SimpleHTTPRequestHandler.handle_one_request(self)
+
 
 def main():
     https_server(certfile=CERTFILE)
