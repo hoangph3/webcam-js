@@ -1,117 +1,118 @@
-<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><title>Camera</title><style>#video {
-    width: 100%;
-  }
-  
-  .is-hidden {
-    display: none;
-  }
-  
-  .iconfont {
-    font-size: 24px;
-  }
-  
-  .btns {
-    margin-bottom: 10px;
-  }
-  
-  button {
-    font-size: 22px;
-    padding: 8px 10px;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-  }
-  
-  .video-screenshot {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-column-gap: 10px;
-  }
-  
-  footer {
-    margin: 20px 0;
-    font-size: 16px;
-  }</style>
-  <body><div class=btns><button class="button is-hidden" id=btnPlay>Play camera</button> <button class=button id=btnPause>Stop camera</button> <button class=button id=btnScreenshot>Chụp hình</button> <button class=button id=btnChangeCamera style="padding: 6px 10px;">Đổi camera</button></div><div class=video-screenshot><video autoplay id=video></video><div><div id=screenshotsContainer><canvas id=canvas class=is-hidden></canvas></div></div></div><script>window.onload = async function () {
-    if (
-      !"mediaDevices" in navigator ||
-      !"getUserMedia" in navigator.mediaDevices
-    ) {
-      document.write('Not support API camera')
-      return;
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opencv JS</title>
+    <script async src="js/opencv.js" onload="openCvReady();"></script>
+    <script src="js/utils.js"></script>
+</head>
+<style type="text/css">
+    .wrap, .wrap canvas { height:480px; width:640px }
+    .wrap { position:relative }
+    .wrap > * { position:absolute }
+    #user_info { top:10px; left:330px; }
+    th, td {
+        border-radius: 5px;
+        text-align: right;
     }
-  
-    const video = document.querySelector("#video");
-    const canvas = document.querySelector("#canvas");
-    const screenshotsContainer = document.querySelector("#screenshotsContainer");
-    let videoStream = null
-    let useFrontCamera = true; //camera trước
-    const constraints = {
-      video: {
-        width: {
-          min: 1280,
-          ideal: 1920,
-          max: 2560,
-        },
-        height: {
-          min: 720,
-          ideal: 1080,
-          max: 1440,
+    input {
+        text-align: center; 
+    }
+</style>
+<body>
+    <div class="wrap" style="text-align:center;">
+        <video id="cam_input" height="480" width="640"></video>
+        <canvas id="canvas_output"></canvas>
+        <form action="#" id="user_info" style="background-color:#FFFFFF; border-radius:5px; padding:5px;">
+            <table summary="data panel" style='font-family:"Serif"; font-size:15'>
+            <tr><td>Họ tên: </td><td><input type="text" name="username" style='border:1px solid #FFFFFF; font-family:"Serif"; font-size:15; width:160px;'></td></tr>
+            <tr><td>SĐT: </td><td><input type="text" name="phone", style='border:1px solid #FFFFFF; font-family:"Serif"; font-size:15; width:160px'></td></tr>
+            <tr><td>Vị trí: </td><td><input type="text" name="box" style='border:1px solid #FFFFFF; font-family:"Serif"; font-size:15; width:160px'></td></tr>
+            </table>
+        </form>
+    </div>
+</body>
+<script type="text/JavaScript">
+function openCvReady() {
+  cv['onRuntimeInitialized']=()=>{
+    let video = document.getElementById("cam_input"); // video is the id of video tag
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+    .then(function(stream) {
+        video.srcObject = stream;
+        video.play();
+    })
+    .catch(function(err) {
+        console.log("An error occurred! " + err);
+    });
+    let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+    let dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
+    let gray = new cv.Mat();
+    let cap = new cv.VideoCapture(cam_input);
+    let faces = new cv.RectVector();
+    let classifier = new cv.CascadeClassifier();
+    let utils = new Utils('errorMessage');
+    let faceCascadeFile = 'haarcascade_frontalface_default.xml'; // path to xml
+    utils.createFileFromUrl(faceCascadeFile, faceCascadeFile, () => {
+    classifier.load(faceCascadeFile); // in the callback, load the cascade from file 
+});
+    const FPS = 24;
+    function processVideo() {
+        let begin = Date.now();
+        cap.read(src);
+        src.copyTo(dst);
+        cv.cvtColor(dst, gray, cv.COLOR_RGBA2GRAY, 0);
+        try{
+            classifier.detectMultiScale(gray, faces, 1.1, 2, 0);
+            console.log(faces.size());
+        }catch(err){
+            console.log(err);
         }
-      },
-    };
-  
-    // play
-    btnPlay.addEventListener("click", function () {
-      video.play();
-      btnPlay.classList.add("is-hidden");
-      btnPause.classList.remove("is-hidden");
-    });
-  
-    // pause
-    btnPause.addEventListener("click", function () {
-      video.pause();
-      btnPause.classList.add("is-hidden");
-      btnPlay.classList.remove("is-hidden");
-    });
-  
-  
-    btnChangeCamera.addEventListener("click", function () {
-      useFrontCamera = !useFrontCamera;
-      init();
-    });
-  
-  
-    function stopVideoStream() {
-      if (videoStream) {
-        videoStream.getTracks().forEach((track) => {
-          track.stop();
-        });
-      }
-    }
-  
-    btnScreenshot.addEventListener("click", function () {
-      let img = document.getElementById('screenshot');
-      if (!img) {
-        img = document.createElement("img");
-        img.id = 'screenshot';
-        img.style.width = '100%';
-      }
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext("2d").drawImage(video, 0, 0);
-      img.src = canvas.toDataURL("image/png");
-      screenshotsContainer.prepend(img);
-    });
-  
-    async function init() {
-      stopVideoStream();
-      constraints.video.facingMode = useFrontCamera ? "user" : "environment";
-      try {
-        videoStream = await navigator.mediaDevices.getUserMedia(constraints);
-        video.srcObject = videoStream;
-      } catch (error) {
-        console.log(error)
-      }
-    }
-    init();
-  }</script><script async src="js/js.js"></script><script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","UA-111717926-1")</script><div><script async src=//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script><ins class=adsbygoogle style="display:block; text-align:center;" data-ad-layout=in-article data-ad-format=fluid data-ad-client=ca-pub-1121308659421064 data-ad-slot=8232164616></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({})</script><div></div></div></body></html>
+        for (let i = 0; i < faces.size(); ++i) {
+            let face = faces.get(i);
+            let point1 = new cv.Point(face.x, face.y);
+            let point2 = new cv.Point(face.x + face.width, face.y + face.height);
+            cv.rectangle(dst, point1, point2, [255, 0, 0, 255]);
+        }
+        let face = faces.get(0);
+        if (face != undefined) {
+            // let rect = new cv.Rect(face.x, face.y, face.width, face.height);
+            // crop = dst.roi(rect);
+            cv.imshow("canvas_output", dst);
+            const base64Canvas = canvas_output.toDataURL("image/jpeg").split(';base64,')[1];
+            // console.log(base64Canvas);
+            fetch("https://192.168.0.2:5000/api/user/pattern", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    image: base64Canvas,
+                    box: [face.x, face.y, face.width, face.height]
+                }),
+            })
+            .then((res) => {
+                return res.json();
+            })
+            .then((data) => {
+                console.log(data);
+                const user_info = document.getElementById("user_info");
+                user_info["username"].value = data.username;
+                user_info["phone"].value = data.phone;
+                user_info["box"].value = data.box;
+            });
+        }
+        else {
+            cv.imshow("canvas_output", src);
+            const user_info = document.getElementById("user_info");
+            user_info["username"].value = "";
+            user_info["phone"].value = "";
+            user_info["box"].value = "";
+        }
+        // schedule next one.
+        let delay = 1000/FPS - (Date.now() - begin);
+        setTimeout(processVideo, delay);
+}
+// schedule first one.
+setTimeout(processVideo, 0);
+  };
+}
+</script>
+</html>
