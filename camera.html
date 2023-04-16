@@ -27,7 +27,8 @@
             <table summary="data panel" style='font-family:"Serif"; font-size:15'>
             <tr><td>Họ tên: </td><td><input type="text" name="username" style='border:1px solid #FFFFFF; font-family:"Serif"; font-size:15; width:160px;'></td></tr>
             <tr><td>SĐT: </td><td><input type="text" name="phone", style='border:1px solid #FFFFFF; font-family:"Serif"; font-size:15; width:160px'></td></tr>
-            <tr><td>Vị trí: </td><td><input type="text" name="box" style='border:1px solid #FFFFFF; font-family:"Serif"; font-size:15; width:160px'></td></tr>
+            <tr><td>Email: </td><td><input type="text" name="email" style='border:1px solid #FFFFFF; font-family:"Serif"; font-size:15; width:160px'></td></tr>
+            <tr><td>CCCD/CMT: </td><td><input type="text" name="passport" style='border:1px solid #FFFFFF; font-family:"Serif"; font-size:15; width:160px'></td></tr>
             </table>
         </form>
     </div>
@@ -94,9 +95,10 @@ function openCvReady() {
             .then((data) => {
                 console.log(data);
                 const user_info = document.getElementById("user_info");
-                user_info["username"].value = data.username;
-                user_info["phone"].value = data.phone;
-                user_info["box"].value = data.box;
+                user_info["username"].value = data.zcfg_requester_comboname;
+                user_info["phone"].value = data.zcfg_requester_phone_number;
+                user_info["email"].value = data.zcfg_requester_address_email;
+                user_info["passport"].value = data.zcfg_requester_id_passport;
             });
         }
         else {
@@ -104,7 +106,8 @@ function openCvReady() {
             const user_info = document.getElementById("user_info");
             user_info["username"].value = "";
             user_info["phone"].value = "";
-            user_info["box"].value = "";
+            user_info["email"].value = "";
+            user_info["passport"].value = "";
         }
         // schedule next one.
         let delay = 1000/FPS - (Date.now() - begin);

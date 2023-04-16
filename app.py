@@ -15,9 +15,10 @@ def hello_world():
     print(response)
     plt.imsave("images/frame_{}.jpg".format(len(os.listdir("images"))), b64_to_array(response['image']))
     return make_response(jsonify({
-        "username": "test",
-        "phone": random.randint(0, 1000),
-        "box": response['box']
+        "zcfg_requester_comboname": "test",
+        "zcfg_requester_phone_number": random.randint(0, 1000),
+        "zcfg_requester_address_email": "test@example.com",
+        "zcfg_requester_id_passport": random.randint(0, 1000)
     }), 200)
 
 
