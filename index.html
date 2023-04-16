@@ -6,9 +6,31 @@
     <script async src="js/opencv.js" onload="openCvReady();"></script>
     <script src="js/utils.js"></script>
 </head>
+<style type="text/css">
+    .wrap, .wrap canvas { height:480px; width:640px }
+    .wrap { position:relative }
+    .wrap > * { position:absolute }
+    #user_info { top:10px; left:330px; }
+    th, td {
+        border-radius: 5px;
+        text-align: right;
+    }
+    input {
+        text-align: center; 
+    }
+</style>
 <body>
-    <video id="cam_input" height="480" width="640"></video>
-    <canvas id="canvas_output"></canvas>
+    <div class="wrap" style="text-align:center;">
+        <video id="cam_input" height="480" width="640"></video>
+        <canvas id="canvas_output"></canvas>
+        <form action="#" id="user_info" style="background-color:#FFFFFF; border-radius:5px; padding:5px;">
+            <table summary="data panel" style='font-family:"Serif"; font-size:15'>
+            <tr><td>Họ tên: </td><td><input type="text" name="username" style='border:1px solid #FFFFFF; font-family:"Serif"; font-size:15; width:160px;'></td></tr>
+            <tr><td>SĐT: </td><td><input type="text" name="phone", style='border:1px solid #FFFFFF; font-family:"Serif"; font-size:15; width:160px'></td></tr>
+            <tr><td>Vị trí: </td><td><input type="text" name="box" style='border:1px solid #FFFFFF; font-family:"Serif"; font-size:15; width:160px'></td></tr>
+            </table>
+        </form>
+    </div>
 </body>
 <script type="text/JavaScript">
 function openCvReady() {
@@ -45,28 +67,44 @@ function openCvReady() {
         }catch(err){
             console.log(err);
         }
-        // for (let i = 0; i < faces.size(); ++i) {
-        //     let face = faces.get(i);
-        //     let point1 = new cv.Point(face.x, face.y);
-        //     let point2 = new cv.Point(face.x + face.width, face.y + face.height);
-        //     cv.rectangle(dst, point1, point2, [255, 0, 0, 255]);
-        // }
+        for (let i = 0; i < faces.size(); ++i) {
+            let face = faces.get(i);
+            let point1 = new cv.Point(face.x, face.y);
+            let point2 = new cv.Point(face.x + face.width, face.y + face.height);
+            cv.rectangle(dst, point1, point2, [255, 0, 0, 255]);
+        }
         let face = faces.get(0);
         if (face != undefined) {
-            let rect = new cv.Rect(face.x, face.y, face.width, face.height);
-            crop = dst.roi(rect);
-            cv.imshow("canvas_output", crop);
+            // let rect = new cv.Rect(face.x, face.y, face.width, face.height);
+            // crop = dst.roi(rect);
+            cv.imshow("canvas_output", dst);
             const base64Canvas = canvas_output.toDataURL("image/jpeg").split(';base64,')[1];
             // console.log(base64Canvas);
-            fetch('https://192.168.0.2:5000/api/user/pattern', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ "image": base64Canvas})
+            fetch("https://192.168.0.2:5000/api/user/pattern", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    image: base64Canvas,
+                    box: [face.x, face.y, face.width, face.height]
+                }),
             })
-            .then(response => response.json())
-            .then(response => console.log(JSON.stringify(response)))
+            .then((res) => {
+                return res.json();
+            })
+            .then((data) => {
+                console.log(data);
+                const user_info = document.getElementById("user_info");
+                user_info["username"].value = data.username;
+                user_info["phone"].value = data.phone;
+                user_info["box"].value = data.box;
+            });
+        }
+        else {
+            cv.imshow("canvas_output", src);
+            const user_info = document.getElementById("user_info");
+            user_info["username"].value = "";
+            user_info["phone"].value = "";
+            user_info["box"].value = "";
         }
         // schedule next one.
         let delay = 1000/FPS - (Date.now() - begin);
