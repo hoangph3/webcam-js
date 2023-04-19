@@ -21,7 +21,7 @@
 </style>
 <body>
     <div class="wrap" style="text-align:center;">
-        <video id="cam_input" height="480" width="640"></video>
+        <video id="cam_input" height="480" width="640" style="display: none;"></video>
         <canvas id="canvas_output"></canvas>
         <form action="#" id="user_info" style="background-color:#FFFFFF; border-radius:5px; padding:5px;">
             <table summary="data panel" style='font-family:"Serif"; font-size:15'>
@@ -63,7 +63,7 @@ function openCvReady() {
         src.copyTo(dst);
         cv.cvtColor(dst, gray, cv.COLOR_RGBA2GRAY, 0);
         try{
-            classifier.detectMultiScale(gray, faces, 1.1, 2, 0);
+            classifier.detectMultiScale(gray, faces, 1.1, 5, 0);
             console.log(faces.size());
         }catch(err){
             console.log(err);
