@@ -4,7 +4,7 @@ import ssl
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 
-CERTFILE = './certs/kotora.pem'
+CERTFILE = './certs/domain.pem'
 
 
 class MyHttpRequestHandler(SimpleHTTPRequestHandler):
