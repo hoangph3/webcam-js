@@ -1,0 +1,116 @@
+<!DOCTYPE html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=X-UA-Compatible content="ie=edge"><title>Cách sử dụng JavaScript để truy cập camera của thiết bị (trước và sau)</title><style>#video {
+    width: 100%;
+  }
+  
+  .is-hidden {
+    display: none;
+  }
+  
+  .iconfont {
+    font-size: 24px;
+  }
+  
+  .btns {
+    margin-bottom: 10px;
+  }
+  
+  button {
+    font-size: 22px;
+    padding: 8px 10px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+  }
+  
+  .video-screenshot {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 10px;
+  }
+  
+  footer {
+    margin: 20px 0;
+    font-size: 16px;
+  }</style></head><body><h1>Cách sử dụng JavaScript để truy cập camera của thiết bị (trước và sau)</h1><br><a href=https://anonystick.com/blog-developer/su-dung-javascript-truy-cap-camera-sau-truoc-va-chup-man-minh-thiet-bi-di-dong-2020061162339379>&#8592; Trở về với bài viết</a><br><div class=btns><button class="button is-hidden" id=btnPlay>Play camera</button> <button class=button id=btnPause>Stop camera</button> <button class=button id=btnScreenshot>Chụp hình</button> <button class=button id=btnChangeCamera style="padding: 6px 10px;">Đổi camera</button></div><div class=video-screenshot><video autoplay id=video></video><div><div id=screenshotsContainer><canvas id=canvas class=is-hidden></canvas></div></div></div><script>window.onload = async function () {
+    if (
+      !"mediaDevices" in navigator ||
+      !"getUserMedia" in navigator.mediaDevices
+    ) {
+      document.write('Not support API camera')
+      return;
+    }
+  
+    const video = document.querySelector("#video");
+    const canvas = document.querySelector("#canvas");
+    const screenshotsContainer = document.querySelector("#screenshotsContainer");
+    let videoStream = null
+    let useFrontCamera = true; //camera trước
+    const constraints = {
+      video: {
+        width: {
+          min: 1280,
+          ideal: 1920,
+          max: 2560,
+        },
+        height: {
+          min: 720,
+          ideal: 1080,
+          max: 1440,
+        }
+      },
+    };
+  
+    // play
+    btnPlay.addEventListener("click", function () {
+      video.play();
+      btnPlay.classList.add("is-hidden");
+      btnPause.classList.remove("is-hidden");
+    });
+  
+    // pause
+    btnPause.addEventListener("click", function () {
+      video.pause();
+      btnPause.classList.add("is-hidden");
+      btnPlay.classList.remove("is-hidden");
+    });
+  
+  
+    btnChangeCamera.addEventListener("click", function () {
+      useFrontCamera = !useFrontCamera;
+      init();
+    });
+  
+  
+    function stopVideoStream() {
+      if (videoStream) {
+        videoStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+      }
+    }
+  
+    btnScreenshot.addEventListener("click", function () {
+      let img = document.getElementById('screenshot');
+      if (!img) {
+        img = document.createElement("img");
+        img.id = 'screenshot';
+        img.style.width = '100%';
+      }
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+      img.src = canvas.toDataURL("image/png");
+      screenshotsContainer.prepend(img);
+    });
+  
+    async function init() {
+      stopVideoStream();
+      constraints.video.facingMode = useFrontCamera ? "user" : "environment";
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = videoStream;
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    init();
+  }</script><script async src="https://www.googletagmanager.com/gtag/js?id=UA-111717926-1"></script><script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","UA-111717926-1")</script><div><script async src=//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script><ins class=adsbygoogle style="display:block; text-align:center;" data-ad-layout=in-article data-ad-format=fluid data-ad-client=ca-pub-1121308659421064 data-ad-slot=8232164616></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({})</script><div></div></div></body></html>
