@@ -38,7 +38,11 @@ function Utils(errorOutputId) { // eslint-disable-line no-unused-vars
             if (request.readyState === 4) {
                 if (request.status === 200) {
                     let data = new Uint8Array(request.response);
-                    cv.FS_createDataFile('/', path, data, true, false, false);
+                    try {
+                        cv.FS_createDataFile('/', path, data, false, false, false);
+                    } catch (error) {
+                        console.log('FS_createDataFile' + error);
+                    }
                     callback();
                 } else {
                     self.printError('Failed to load ' + url + ' status: ' + request.status);

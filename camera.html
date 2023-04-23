@@ -5,7 +5,116 @@
     <title>Opencv JS</title>
     <script async src="js/opencv.js" onload="openCvReady();"></script>
     <script src="js/utils.js"></script>
+    <link rel="stylesheet" href="css/font-awesome.min.css">
 </head>
+
+<body id="contento">
+    <video id="cam_input" height="480" width="640"></video>
+    <button onclick="goFullscreen('contento'); return false">
+        <i class="fa fa-expand"></i>
+    </button>
+    <form action="#" id="user_info" style="background-color:#FFFFFF; border-radius:5px; padding:5px;">
+        <table summary="data panel" style='font-family:"Serif"; font-size:18'>
+        <tr><td>Họ tên: </td><td><input type="text" name="username" style='border:2px solid #FFFFFF; font-family:"Serif"; font-size:18; width:200px;'></td></tr>
+        <tr><td>SĐT: </td><td><input type="text" name="phone", style='border:2px solid #FFFFFF; font-family:"Serif"; font-size:18; width:200px'></td></tr>
+        <tr><td>Email: </td><td><input type="text" name="email" style='border:2px solid #FFFFFF; font-family:"Serif"; font-size:18; width:200px'></td></tr>
+        <tr><td>CCCD/CMT: </td><td><input type="text" name="passport" style='border:2px solid #FFFFFF; font-family:"Serif"; font-size:18; width:200px'></td></tr>
+        <!-- <tr><td>Status: </td><td><input type="text" name="status" style='border:2px solid #FFFFFF; font-family:"Serif"; font-size:18; width:200px'></td></tr> -->
+        </table>
+    </form>
+    <canvas id="canvas_output" style="display: none;"></canvas>
+</body>
+<script type="text/JavaScript">
+function openCvReady() {
+  cv['onRuntimeInitialized']=()=>{
+    var video = document.getElementById("cam_input"); // video is the id of video tag
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+    .then(function(stream) {
+        video.srcObject = stream;
+        video.play();
+    })
+    .catch(function(err) {
+        console.log("An error occurred! " + err);
+    });
+    // schedule first one.
+    setTimeout(processVideo, 0);
+    }
+}
+
+async function processVideo(options = {}) {
+    // config
+    const FPS = 1;
+    const { timeout = 10000 } = options;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    
+    // start process
+    let video = document.getElementById("cam_input"); // video is the id of video tag
+    let begin = Date.now();
+    var canvas = document.getElementById('canvas_output');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0)
+
+    const base64Canvas = canvas_output.toDataURL("image/jpeg").split(';base64,')[1];
+    // console.log(base64Canvas);
+
+    const user_info = document.getElementById("user_info");
+
+    try {
+        const response = await fetch("https://192.168.0.2:5000/api/user/pattern", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                images: [base64Canvas]
+            }),
+            ...options,
+            signal: controller.signal
+        })
+        clearTimeout(id);
+        const data = await response.json();
+        console.log(data);
+        user_info["username"].value = data.zcfg_requester_comboname ? data.zcfg_requester_comboname : "";
+        user_info["phone"].value = data.zcfg_requester_phone_number ? data.zcfg_requester_phone_number : "";
+        user_info["email"].value = data.zcfg_requester_address_email ? data.zcfg_requester_address_email: "";
+        user_info["passport"].value = data.zcfg_requester_id_passport ? data.zcfg_requester_id_passport : "";
+        // user_info["status"].value = 'ok';
+    } catch (error) {
+        console.log('Fetch error cause ' + error);
+        user_info["username"].value = "";
+        user_info["phone"].value = "";
+        user_info["email"].value = "";
+        user_info["passport"].value = "";
+        // user_info["status"].value = "timeout";
+    }
+
+    let delay = 1000/FPS - (Date.now() - begin);
+    setTimeout(processVideo, delay);
+}
+
+function goFullscreen(id) {
+    // Get the element that we want to take into fullscreen mode
+    var element = document.getElementById(id);
+
+    // These function will not exist in the browsers that don't support fullscreen mode yet,
+    // so we'll have to check to see if they're available before calling them.
+
+    if (element.mozRequestFullScreen) {
+        // This is how to go into fullscren mode in Firefox
+        // Note the "moz" prefix, which is short for Mozilla.
+        element.mozRequestFullScreen();
+    } else if (element.webkitRequestFullScreen) {
+        // This is how to go into fullscreen mode in Chrome and Safari
+        // Both of those browsers are based on the Webkit project, hence the same prefix.
+        element.webkitRequestFullScreen();
+    }
+    // Hooray, now we're in fullscreen mode!
+}
+</script>
+</html>
+
 <style type="text/css">
     #cam_input, #alternative {
         width: 100vw; /* Could also use width: 100%; */
@@ -16,7 +125,7 @@
         top: 0px;
         z-index: -1;
     }
-    #canvas_output #alternative {
+    #canvas_output, #alternative {
         width: 100vw; /* Could also use width: 100%; */
         height: 100vh;
         object-fit: cover;
@@ -25,6 +134,16 @@
         top: 0px;
         z-index: -1;
     }
+    div {
+        border: 3px solid blue;
+        margin: 5px;
+        border-radius: 20px;
+        position: absolute; /* Change position to absolute if you don't want it to take up the whole page */
+        left: 22%;
+        top: 20%;
+        right: 22%;
+        bottom: 40%;
+        }
     #user_info { bottom:0px; right:10px; position: fixed;}
     th, td {
         border-radius: 5px;
@@ -33,71 +152,15 @@
     input {
         text-align: center; 
     }
+
+    #contento:-webkit-full-screen {
+        width: 100%;
+        height: 100%;
+    }
+
+    #contento:-moz-full-screen {
+        width: 100%;
+        height: 100%;
+    }
+
 </style>
-<body>
-    <video id="cam_input"></video>
-    <form action="#" id="user_info" style="background-color:#FFFFFF; border-radius:5px; padding:5px;">
-        <table summary="data panel" style='font-family:"Serif"; font-size:18'>
-        <tr><td>Họ tên: </td><td><input type="text" name="username" style='border:2px solid #FFFFFF; font-family:"Serif"; font-size:18; width:200px;'></td></tr>
-        <tr><td>SĐT: </td><td><input type="text" name="phone", style='border:2px solid #FFFFFF; font-family:"Serif"; font-size:18; width:200px'></td></tr>
-        <tr><td>Email: </td><td><input type="text" name="email" style='border:2px solid #FFFFFF; font-family:"Serif"; font-size:18; width:200px'></td></tr>
-        <tr><td>CCCD/CMT: </td><td><input type="text" name="passport" style='border:2px solid #FFFFFF; font-family:"Serif"; font-size:18; width:200px'></td></tr>
-        </table>
-    </form>
-    <canvas id="canvas_output" style="display: none;"></canvas>
-</body>
-<script type="text/JavaScript">
-function openCvReady() {
-  cv['onRuntimeInitialized']=()=>{
-    let video = document.getElementById("cam_input"); // video is the id of video tag
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-    .then(function(stream) {
-        video.srcObject = stream;
-        video.play();
-    })
-    .catch(function(err) {
-        console.log("An error occurred! " + err);
-    });
-    const FPS = 1;
-    function processVideo() {
-        let begin = Date.now();
-
-        var canvas = document.getElementById('canvas_output');
-        var ctx = canvas.getContext('2d');
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0)
-
-        const base64Canvas = canvas_output.toDataURL("image/jpeg").split(';base64,')[1];
-        // console.log(base64Canvas);
-
-        fetch("https://192.168.0.11:8501/api/user/pattern", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                images: [base64Canvas],
-                // boxs: [[face.x, face.y, face.x + face.width, face.y + face.height]]
-            }),
-        })
-        .then((res) => {
-            return res.json();
-        })
-        .then((data) => {
-            console.log(data);
-            const user_info = document.getElementById("user_info");
-            user_info["username"].value = data.zcfg_requester_comboname ? data.zcfg_requester_comboname : "";
-            user_info["phone"].value = data.zcfg_requester_phone_number ? data.zcfg_requester_phone_number : "";
-            user_info["email"].value = data.zcfg_requester_address_email ? data.zcfg_requester_address_email: "";
-            user_info["passport"].value = data.zcfg_requester_id_passport ? data.zcfg_requester_id_passport : "";
-        });
-        // schedule next one.
-        let delay = 1000/FPS - (Date.now() - begin);
-        setTimeout(processVideo, delay);
-}
-// schedule first one.
-setTimeout(processVideo, 0);
-  };
-}
-</script>
-</html>
