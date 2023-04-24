@@ -16,7 +16,7 @@ def hello_world():
     response = request.get_json()
     print(time.time())
 
-    time.sleep(5.0)
+    time.sleep(3.0)
     try:
         plt.imsave("images/frame_{}.jpg".format(len(os.listdir("images"))), b64_to_array(response['images'][0]))
     except:

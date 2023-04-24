@@ -64,7 +64,7 @@ async function processVideo(options = {}) {
     const user_info = document.getElementById("user_info");
 
     try {
-        const response = await fetch("https://192.168.0.2:5000/api/user/pattern", {
+        const response = await fetch("https://192.168.0.2:8501/api/user/pattern", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
