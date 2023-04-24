@@ -43,8 +43,8 @@ function openCvReady() {
 
 async function processVideo(options = {}) {
     // config
-    const FPS = 1;
-    const { timeout = 10000 } = options;
+    const FPS = 0.5;
+    const { timeout = 5000 } = options;
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     
